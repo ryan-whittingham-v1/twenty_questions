@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class Main {
@@ -7,8 +8,15 @@ public class Main {
 		
 		String userResponse = "";
 		
+		File file;
+		
 		// Create file object of database file
-		File file = new File("src/20QBig.txt");
+		if(args.length==0) {
+			file = new File("src/PA4-data");
+		}
+		else {
+			file = new File(args[0]);
+		}
 		
 		// Scanner for reading database file
 		Scanner fileIn = null;
@@ -27,6 +35,7 @@ public class Main {
 		// Create new tree from file
 		MyBinaryTree mbt = new MyBinaryTree(fileIn);
 		
+		fileIn.close(); // close fileIn scanner
 		/*
 		System.out.println("" + mbt.root);
 		System.out.println("" + mbt.root.left);
@@ -78,10 +87,20 @@ public class Main {
 			}
 		}
 		
-		//Print the tree
 		mbt.print(mbt.getRoot());
-		// Write the tree to file
-	
+		
+		// Create PrintWriter to write to file
+		PrintWriter fileOut;
+	    try{
+	      fileOut=new PrintWriter(file);
+	    }catch (Exception e){
+	      System.out.println("Couldn't open output file: " + e);
+	      return; 
+	    }
+		
+		//Write the tree to file
+		mbt.write(mbt.getRoot(), fileOut);
+		fileOut.flush();
 	}
 
 }

@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class MyBinaryTree {
@@ -29,7 +30,7 @@ public class MyBinaryTree {
 				newNode.right = newNode.left = null; // End of branch, Set left and right pointers to null 
 				return newNode;
 			}
-			else { // Line is a question
+			else if(temp.charAt(0) == 'Q'){ // Line is a question
 				TNode newNode = new TNode();
 				newNode.setType("Q:");
 				newNode.setData(fileIn.nextLine());
@@ -37,21 +38,35 @@ public class MyBinaryTree {
 				newNode.right = read(fileIn); // Recursively build up the right sub tree
 				return newNode; 
 			}			
+			fileIn.close();
+			return null;
 	}
 	
 	public TNode getRoot() {
 		return root;
 	}
 	
-	// NLR traverse and print tree
-	public TNode print(TNode node) {
+	// NLR traverse to print entire tree
+		public TNode print(TNode node) {
+			if(node == null) {
+				return node;
+			}
+			System.out.println(node.getType());
+			System.out.println(node);
+			print(node.left);
+			print(node.right);
+			return null;
+		}
+	
+	// NLR traverse to write entire tree to file
+	public TNode write(TNode node, PrintWriter fileOut) {
 		if(node == null) {
 			return node;
 		}
-		System.out.println(node.getType());
-		System.out.println(node);
-		print(node.left);
-		print(node.right);
+		fileOut.println(node.getType());
+		fileOut.println(node);
+		write(node.left, fileOut);
+		write(node.right, fileOut);
 		return null;
 	}
 	
