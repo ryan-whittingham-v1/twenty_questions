@@ -1,36 +1,24 @@
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.Scanner;
-
 import javax.swing.JOptionPane;
 	
 public class Game {
 	String userResponse;
-	File file;
-	Scanner fileIn;
+	String filePath;
+	InputStream fileIn;
 	MyBinaryTree mbt;
 	TNode currentNode;
 	PrintWriter fileOut;
 	int questionCount;
 	String questionCountString;
 	
-	public Game(File file) {		
-		this.file = file;
+	// Constructor
+	public Game(InputStream fileIn) {		
+		this.fileIn = fileIn;
+		mbt = new MyBinaryTree(fileIn);
 	}
-	
-	public void loadDb() {
-		// Create scanner to parse file
-					try {
-						fileIn = new Scanner(file);
-					}
-					catch(Exception e) {
-						System.out.println("File not found");
-					}
-					// Create new tree from file
-					mbt = new MyBinaryTree(fileIn);
-					fileIn.close(); // close fileIn scanner
-	}
-	
+		
 	// Reset to the game to the root node
 	public void reset() {
 		currentNode = mbt.getRoot();
@@ -38,6 +26,7 @@ public class Game {
 		questionCountString = "";
 	}
 	
+	// Get question number
 	public String getQuestionNum() {
 		questionCountString = Integer.toString(questionCount);
 		return ("Question # " + questionCountString);
@@ -46,64 +35,75 @@ public class Game {
 	// Ask question
 	public String askQuestion() {
 			questionCount++;
-			return currentNode.toString();
+			if(currentNode.getType().equals("A:")) { // Answer node
+				return("I've got it...is it " + currentNode.toString() + "?");
+			}
+			else {
+				return currentNode.toString(); 
+			}
 	}
 	
-	// Yes button click
+	// Yes button clicked
 	public void yesClick() {
-					if(currentNode.left == null) { // No more questions (Answer right)
-						JOptionPane.showMessageDialog(null, "Cool! I was right. Let's play again!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
-						reset();
-					}
-					else { // Otherwise move to the next question 
-						currentNode = currentNode.left;
-					}
+		if(currentNode.left == null) { // No more questions, answer correct
+			JOptionPane.showMessageDialog(null, "Cool! I was right. Let's play again!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			reset(); // reset the game
+		}
+		else { // Otherwise move to the next question 
+			currentNode = currentNode.left;
+		}
 	}
 	
-	// No button click
+	// No button clicked
 	public void noClick() {
-					if(currentNode.right == null) { // No more questions (Answer wrong)
-						String userResponse = JOptionPane.showInputDialog("Really? I'm never wrong. What were you thinking of?");
-						while(userResponse.length() == 0) { // User did not type in anything
-							userResponse = JOptionPane.showInputDialog("Please tell me what you were thinking of");
-						}
-						TNode newNode = new TNode(userResponse); // Create new node to store user Response
-						newNode.setType("A:"); // Set new node type to answer
-						TNode wrongNode = new TNode(currentNode.toString()); // Create new node to store incorrect answer
-						wrongNode.setType("A:"); // Set wrong node type to answer
-						userResponse = JOptionPane.showInputDialog("Please provide a question that distinguishes " + newNode + "from " + wrongNode);
-						while(userResponse.length() == 0) { // User did not type in anything
-							userResponse = JOptionPane.showInputDialog("What is a question that distinguishes " + newNode + "from " + wrongNode);
-						}
-						currentNode.setData(userResponse); // Set currentNode text to new question
-						currentNode.setType("Q:"); // Change currentNode to type question
-						currentNode.left = newNode; // Assign left node of current to new node
-						currentNode.right = wrongNode; // Assign right node of current to wrong node
-						updateDB();
-						JOptionPane.showMessageDialog(null, "Thanks! Now let's try again", "Game Over", JOptionPane.INFORMATION_MESSAGE);
-						reset();
-					}
-					else { // Otherwise move to the next question
-						currentNode = currentNode.right;
-					}
+		if(currentNode.right == null) { // No more questions (Answer wrong)
+			userResponse = null;
+			while(userResponse == null) { // While user response is empty
+				userResponse = JOptionPane.showInputDialog("No! What were you thinking of?");
+				if(userResponse == null) { // If cancel button pressed
+					return; // exit method
+				}
+			}
+			TNode newNode = new TNode(userResponse); // Create new node to store user Response
+			newNode.setType("A:"); // Set new node type to answer
+			TNode wrongNode = new TNode(currentNode.toString()); // Create new node to store incorrect answer
+			wrongNode.setType("A:"); // Set wrong node type to answer
+			userResponse = null;
+			while(userResponse == null) { // While user response is empty
+				userResponse = JOptionPane.showInputDialog("Please provide a question that distinguishes " + newNode + " from " + wrongNode);
+				if(userResponse == null) { // If cancel button pressed
+					return; // exit method
+				}
+			}
+			currentNode.setData(userResponse); // Set currentNode text to new question
+			currentNode.setType("Q:"); // Change currentNode to type question
+			currentNode.left = newNode; // Assign left node of current to new node
+			currentNode.right = wrongNode; // Assign right node of current to wrong node
+			updateDB(); // Write updated decision tree to the text file
+			JOptionPane.showMessageDialog(null, "Thanks! Now let's try again", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+			reset();
+		}
+		else { // Otherwise move to the next question
+			currentNode = currentNode.right;
+		}
 	}
-			
-			
-	// Create PrintWriter to write to file
 	
+	// Set file out path
+	public void setFileOut(String filePath) {
+			this.filePath = filePath; 
+	
+	}
+
+	// Write tree to file	
 	public void updateDB() {
-		    try{
-		      fileOut=new PrintWriter(file);
-		    }catch (Exception e){
-		      System.out.println("Couldn't open output file: " + e);
-		      return; 
-		    }
-			
-			//Write the tree to file
-			mbt.write(mbt.getRoot(), fileOut);
-			fileOut.flush();
+		try {
+			fileOut = new PrintWriter(filePath);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		mbt.write(mbt.getRoot(), fileOut);
+		fileOut.flush();
 	}
-
-	
-
 }

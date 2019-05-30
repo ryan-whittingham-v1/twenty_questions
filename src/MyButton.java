@@ -1,8 +1,6 @@
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridLayout;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -15,6 +13,7 @@ public class MyButton extends JPanel {
 	private String keyValueStr="";
 	private int keyValueInt;
 			
+	// Constructor
 	public MyButton(String text) {
 		this.setBackground(new Color(175, 38, 38));
 		this.setBorder(new SoftBevelBorder(BevelBorder.RAISED, null, null, null, null));

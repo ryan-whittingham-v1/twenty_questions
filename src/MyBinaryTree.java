@@ -1,62 +1,61 @@
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Scanner;
 
 public class MyBinaryTree {
 	
-	TNode root;
+	private TNode root;
+	private BufferedReader reader;
 	
-	public MyBinaryTree(Scanner fileIn) {
-		root = read(fileIn);
+	// Constructor
+	public MyBinaryTree(InputStream fileIn) {
+		reader = new BufferedReader(new InputStreamReader(fileIn));
+		root = build(reader);
 	}
 	
-	
-	//            
-	public void build(Scanner fileIn) {
-		root = read(fileIn);
-	}
-	
-	// Recursively read from file to build tree and return root node
-	public TNode read(Scanner fileIn) {
-			
-			String temp = ""; // Temp string to hold next line from file
-			
-			temp = fileIn.nextLine(); // Get line from file
-			
-			if(temp.charAt(0) == 'A') { // Line is an answer
-				TNode newNode = new TNode(); // Create new node
-				newNode.setType("A:");
-				newNode.setData(fileIn.nextLine()); // Store the answer in the new node
-				newNode.right = newNode.left = null; // End of branch, Set left and right pointers to null 
-				return newNode;
+	// Recursively build tree from bufferedReader and return the root node
+	public TNode build(BufferedReader reader) {				
+		String temp = ""; // Temp string to hold next line from file
+		try {
+			temp = reader.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(temp.charAt(0) == 'A') { // Line is an answer
+			TNode newNode = new TNode(); // Create new node
+			newNode.setType("A:");
+			try {
+				newNode.setData(reader.readLine());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			newNode.right = newNode.left = null; // End of branch, Set left and right pointers to null 
+			return newNode;
+		}
+		else if(temp.charAt(0) == 'Q'){ // Line is a question
+			TNode newNode = new TNode();
+			newNode.setType("Q:");
+			try {
+				newNode.setData(reader.readLine());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			else if(temp.charAt(0) == 'Q'){ // Line is a question
-				TNode newNode = new TNode();
-				newNode.setType("Q:");
-				newNode.setData(fileIn.nextLine());
-				newNode.left = read(fileIn); // Recursively build up the left sub tree
-				newNode.right = read(fileIn); // Recursively build up the right sub tree
-				return newNode; 
-			}			
-			fileIn.close();
-			return null;
+			newNode.left = build(reader); // Recursively build up the left sub tree
+			newNode.right = build(reader); // Recursively build up the right sub tree
+			return newNode; 
+		}			
+		return null;
 	}
 	
+	// Get the root of the tree
 	public TNode getRoot() {
 		return root;
 	}
-	
-	// NLR traverse to print entire tree
-		public TNode print(TNode node) {
-			if(node == null) {
-				return node;
-			}
-			System.out.println(node.getType());
-			System.out.println(node);
-			print(node.left);
-			print(node.right);
-			return null;
-		}
 	
 	// NLR traverse to write entire tree to file
 	public TNode write(TNode node, PrintWriter fileOut) {
@@ -69,8 +68,6 @@ public class MyBinaryTree {
 		write(node.right, fileOut);
 		return null;
 	}
-	
-
 }	
 	
 
